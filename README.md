@@ -2,6 +2,8 @@
 
 > Chrome 扩展（Manifest V3）· WXT + TypeScript · 无后端 · API Key 只存本机
 
+📦 **直接下载安装包**（无需构建）：[Releases → 最新版](https://github.com/bybixi/chaoxing-answer-assistant/releases/latest) → 下载 `zhi-da-v1.0.13-chrome.zip` → 解压后在 `chrome://extensions` 里「加载已解压的扩展程序」。
+
 自动侦测作业/考试页面的题目 → 调用**你自己配置的** OpenAI 兼容接口求解 → 自动回填 → 依靠平台自身的实时保存落盘。
 
 **只回填，不点提交**（自动提交开关默认关闭，且不建议打开）。
@@ -51,7 +53,13 @@
 
 ## 快速开始
 
-### 1. 构建
+### 方式 A：直接下载发布包（推荐给只想用的人）
+
+去 [Releases](https://github.com/bybixi/chaoxing-answer-assistant/releases/latest) 下载 `zhi-da-v1.0.13-chrome.zip`，解压到任意固定文件夹，然后跳到下面「2. 加载」。
+
+> ⚠️ 发布包**不含固定公钥**，扩展 ID 由加载目录决定 → **更换文件夹会丢失已保存的配置**。需要固定 ID 见 FAQ 里那一节；换机/重装可用设置页的导出/导入配置。
+
+### 方式 B：从源码构建（开发者）
 
 ```bash
 # 环境要求：Node ≥ 20（建议 22 LTS）
@@ -67,9 +75,9 @@ npm test         # 单元测试（调度器/答案校验/题型识别/重试/选
 
 ### 2. 加载
 
-打开 `chrome://extensions` → 打开右上角**开发者模式** → **加载已解压的扩展程序** → 选择 **`.output/chrome-mv3`** 目录。
+打开 `chrome://extensions` → 打开右上角**开发者模式** → **加载已解压的扩展程序** → 选择 **`.output/chrome-mv3`** 目录（下载发布包的则选解压出来的文件夹）。
 
-> ⚠️ 要选构建产物目录 `.output/chrome-mv3`，不是项目根目录（那里才有 `manifest.json`）。
+> ⚠️ 从源码构建时要选构建产物目录 `.output/chrome-mv3`，不是项目根目录（那里才有 `manifest.json`）。
 
 ### 3. 配置
 
