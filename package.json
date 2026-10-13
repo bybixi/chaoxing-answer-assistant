@@ -1,0 +1,20 @@
+{
+  "name": "zhi-da",
+  "version": "1.0.13",
+  "description": "学习通作业自动答题助手（自用）",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "zip": "wxt zip",
+    "prepare": "wxt prepare",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@rollup/rollup-win32-x64-msvc": "^4.64.5",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0",
+    "wxt": "^0.20.0"
+  }
+}

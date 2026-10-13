@@ -1,0 +1,15 @@
+{
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "isolatedModules": true
+  },
+  "include": ["**/*", ".wxt/wxt.d.ts"],
+  "exclude": ["node_modules", ".output", "dist"]
+}

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>智答 · 设置</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 20px; color: #1f2937; }
+      h1 { font-size: 20px; } h2 { font-size: 15px; margin: 24px 0 8px; border-left: 3px solid #2563eb; padding-left: 8px; }
+      label { display: block; font-size: 13px; margin: 10px 0 4px; color: #4b5563; }
+      input[type=text], input[type=password] { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; }
+      input[type=number] { width: 120px; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; }
+      .inline { display: flex; gap: 16px; flex-wrap: wrap; }
+      .inline label { margin-right: 0; }
+      .check { display: flex; align-items: center; gap: 6px; font-size: 13px; margin: 8px 0; }
+      .hint { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+      .warn { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px; font-size: 12px; color: #b91c1c; margin-top: 8px; }
+      button { margin-top: 24px; background: #2563eb; color: #fff; border: 0; border-radius: 8px; padding: 10px 28px; font-size: 14px; cursor: pointer; }
+      button.mini { margin-top: 0; padding: 8px 18px; font-size: 13px; }
+      button.green { background: #059669; }
+      textarea { width: 100%; box-sizing: border-box; font-family: ui-monospace, monospace; font-size: 11px; padding: 8px; border: 1px solid #d1d5db; border-radius: 8px; }
+      #saved { color: #059669; font-size: 13px; margin-left: 12px; opacity: 0; transition: opacity .2s; }
+    </style>
+  </head>
+  <body>
+    <h1>智答 · 设置 <span id="ver" style="font-size:12px;color:#9ca3af;font-weight:400;"></span></h1>
+
+    <h2>模型（OpenAI 兼容）</h2>
+    <label>API 地址（baseURL，如 https://api.deepseek.com）</label>
+    <input type="text" id="apiBase" placeholder="https://api.deepseek.com" />
+    <label>API Key</label>
+    <input type="password" id="apiKey" />
+    <div class="hint">Key 存在浏览器本地（chrome.storage.local），不上传任何服务器。</div>
+    <label>文本模型名</label>
+    <input type="text" id="model" placeholder="deepseek-chat" />
+    <label>视觉模型名（图片题用，留空则图片题留空）</label>
+    <input type="text" id="visionModel" placeholder="qwen-vl-plus" />
+
+    <h2>并发调度</h2>
+    <div class="inline">
+      <label>并发数 <input type="number" id="concurrency" min="1" max="10" /></label>
+      <label>间隔下限 ms <input type="number" id="minGapMs" min="0" /></label>
+      <label>间隔上限 ms <input type="number" id="maxGapMs" min="0" /></label>
+    </div>
+    <div class="inline">
+      <label>每分钟请求上限 <input type="number" id="maxPerMinute" min="1" /></label>
+      <label>网络重试次数 <input type="number" id="retries" min="0" max="5" /></label>
+    </div>
+
+    <h2>准确率与行为</h2>
+    <div class="inline">
+      <label>最低置信度（低于则留空）<input type="number" id="minConfidence" min="0" max="1" step="0.05" /></label>
+      <label>格式校验重试次数 <input type="number" id="validateRetries" min="0" max="5" /></label>
+    </div>
+    <div class="check"><input type="checkbox" id="reviewLowConfidence" /> 低置信度自动复核（只对没把握的题多发一次请求，明显减少留空）</div>
+    <div class="check"><input type="checkbox" id="thinking" /> 思考模式（先推理再作答，更准但更慢 —— 推荐）</div>
+    <div class="inline">
+      <label>思考强度
+        <select id="thinkingEffort" style="padding:8px;border:1px solid #d1d5db;border-radius:8px;">
+          <option value="low">低</option>
+          <option value="medium">中</option>
+          <option value="high">高（推荐）</option>
+        </select>
+      </label>
+    </div>
+    <div class="check"><input type="checkbox" id="autoRun" /> 检测到整卷后自动开始</div>
+    <div class="check"><input type="checkbox" id="autoSubmit" /> 自动点「提交」（<b>默认关闭</b>）</div>
+    <div class="warn">「提交」是不可逆动作：填错只是错一道，提交错误就是整卷定稿。超星本身每答一题实时保存，不需要点提交来保存。</div>
+
+    <button id="save">保存</button><span id="saved">已保存 ✓</span>
+
+    <h2>配置备份 / 迁移</h2>
+    <textarea id="cfg" rows="4" placeholder="点「导出配置」把当前配置变成一段文本；或把之前导出的文本粘进来点「导入配置」。"></textarea>
+    <div class="inline" style="margin-top:8px">
+      <button id="export" class="mini">导出配置</button>
+      <button id="import" class="mini green">导入配置</button>
+    </div>
+    <div class="hint">导出的文本里包含 API Key，请不要外发。换文件夹、换电脑、重装扩展时，用它一秒恢复，不用重新手填。</div>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

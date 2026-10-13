@@ -1,0 +1,32 @@
+# ── 依赖与构建产物 ──
+node_modules/
+.output/
+.wxt/
+*.zip
+
+# ── 敏感：绝不能进仓库 ──
+# 扩展私钥 + 固定公钥（公钥虽非机密，但绑定具体扩展实例身份，本地保留即可）
+.keys/
+# 调试用 Chrome 配置目录：内含真实登录态（Cookie/Session）
+.chrome-profile/
+.chrome-*.txt
+
+# ── 测试快照 ──
+# 真实页面快照含个人信息（姓名/学号/账号）与课程题目内容，不随仓库分发。
+# 需要开发解析器时请自行抓取并脱敏后放在此处。
+tests/fixtures/
+
+# ── 临时/调试脚本（按白名单保留 tools 下的正式工具）──
+tools/*
+!tools/make-icon.py
+!tools/preview-icon.py
+!tools/gen-ext-key.mjs
+!tools/audit-fixes.mjs
+!tools/verify-bundle.mjs
+
+# ── 编辑器与系统 ──
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
