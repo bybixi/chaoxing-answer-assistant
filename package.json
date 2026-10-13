@@ -6,7 +6,9 @@
   "private": true,
   "scripts": {
     "dev": "wxt",
+    "prebuild": "node tools/sync-license.mjs",
     "build": "wxt build",
+    "prezip": "node tools/sync-license.mjs",
     "zip": "wxt zip",
     "prepare": "wxt prepare",
     "test": "vitest run"
