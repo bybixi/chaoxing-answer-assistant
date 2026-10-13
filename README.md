@@ -3,7 +3,7 @@
 > Chrome 扩展（Manifest V3）· WXT + TypeScript · 无后端 · API Key 只存本机
 
 📦 **直接下载安装包**（无需构建）：[Releases → 最新版](https://github.com/bybixi/chaoxing-answer-assistant/releases/latest) → 下载 `zhi-da-v1.0.13-chrome.zip` → 解压后在 `chrome://extensions` 里「加载已解压的扩展程序」。
-安装前请务必打开浏览器的**开发者模式**，否则可能**无法加载**该扩展程序。
+- 安装前请务必打开浏览器的**开发者模式**，否则可能**无法加载**该扩展程序。
 
 自动侦测作业/考试页面的题目 → 调用**你自己配置的** OpenAI 兼容接口求解 → 自动回填 → 依靠平台自身的实时保存落盘。
 
