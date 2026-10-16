@@ -4,7 +4,7 @@
 >
 > [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-📦 **直接下载安装包**（无需构建）：[Releases → 最新版](https://github.com/bybixi/chaoxing-answer-assistant/releases/latest) → 下载 `zhi-da-v1.0.13-chrome.zip` → 解压后在 `chrome://extensions` 里「加载已解压的扩展程序」。
+📦 **直接下载安装包**（无需构建）：[Releases → 最新版](https://github.com/bybixi/chaoxing-answer-assistant/releases/latest) → 下载 `zhi-da-v1.0.15-chrome.zip` → 解压后在 `chrome://extensions` 里「加载已解压的扩展程序」。
 
 - 安装前请务必打开浏览器的**开发者模式**，否则可能**无法加载**该扩展程序。
 
@@ -60,7 +60,7 @@
 
 ### 方式 A：直接下载发布包（推荐给只想用的人）
 
-去 [Releases](https://github.com/bybixi/chaoxing-answer-assistant/releases/latest) 下载 `zhi-da-v1.0.13-chrome.zip`，解压到任意固定文件夹，然后跳到下面「2. 加载」。
+去 [Releases](https://github.com/bybixi/chaoxing-answer-assistant/releases/latest) 下载 `zhi-da-v1.0.15-chrome.zip`，解压到任意固定文件夹，然后跳到下面「2. 加载」。
 
 > ⚠️ 发布包**不含固定公钥**，扩展 ID 由加载目录决定 → **更换文件夹会丢失已保存的配置**。需要固定 ID 见 FAQ 里那一节；换机/重装可用设置页的导出/导入配置。
 
@@ -154,6 +154,11 @@ npm test         # 单元测试（调度器/答案校验/题型识别/重试/选
 
 **Q：卡在"正在并发求解…"不动了？**
 ① 思考模式下单题可能耗时 30s+，先耐心等；② 程序已给每个请求加 **120 秒超时**，超时后按设置重试；③ 长时间无进展就点「停止」，看浮球原因列表；④ 若原因列表为空，可能是后台 Service Worker 被回收，切一下标签页或刷新页面会自动恢复（状态存在会话存储）。
+
+**Q：作业页点了「开始」后全部失败 / 全部留空？**
+历史版本的已知缺陷：代码按 **URL** 判断页面类型（只认考试页的 `exam-ans`），于是**作业页**被判成"旧版页面"，用了 `.TiMu` 选择器 —— 而作业页的 `.TiMu` 是**整个答题区的外层包裹**（只命中 1 个），结果**整份卷子被当成 1 道题**、选项全丢、题型判成 `unknown` → 每题都报「特殊题型暂不支持」。
+**v1.0.15 已修**：改为按 **DOM 结构**判定页面类型（作业页与考试页共用同一套 `.questionLi[data]` / `.answerBg` / `#answer<qid>` 约定），作业页现在复用考试页那套已跑通的解析与回填。请更新到最新版。
+> 判断方法：更新后点「开始」，浮球诊断行应显示 `就地作答（结构化）`，且**题数与页面自报的题量一致**。
 
 **Q：大量题"回填失败：answer 值「0」未包含 X"？**
 历史版本的已知缺陷（误取了页面的状态标志域而非答案域），**v1.0.13 已修**，请更新到最新版。
