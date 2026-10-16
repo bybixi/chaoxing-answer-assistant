@@ -26,7 +26,15 @@ export const SELECTORS = {
   examBlankInput: 'input[type=text]',
   examEditorIframe: 'iframe[id^="ueditor"], iframe[id^="editor"]',
 
-  // ── 旧版作业页（未实测，社区参考值）──
+  // ── 旧版作业页（**仅适用于真正的旧版页面**）──
+  //
+  // ⚠️ 2026-10-16 真机实测更正：作业页 `mooc1.chaoxing.com/mooc-ans/mooc2/work/dowork`
+  //    用的是**新版结构**（`.questionLi[data]` + `.mark_name` + `.answerBg`/`addChoice`
+  //    + `#answer<qid>`），与考试页同一套约定 —— 请走 `parse/exam.ts`，
+  //    由 `isExamStylePage()` 自动识别，不要用下面这组选择器。
+  //    实测：该页面 `.TiMu` 只有 1 个且是**整个答题区的外层包裹**（内含 8 道题），
+  //    原生 input 为 0 → 用这组选择器会把整卷当成 1 道题并全部失败。
+  //    下面这批值仍属**未在真机校准**的社区参考值，仅供真正的旧版页面使用。
   questionItem: '.TiMu',
   stemBlock: '.Zy_TItle, .fontLabel, .clearfix',
   optionItem: 'ul li, .answerCard li, li.clearfix',

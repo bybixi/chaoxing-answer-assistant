@@ -28,7 +28,7 @@ export default defineConfig({
   manifest: {
     name: '智答',
     description: '学习通作业/考试自动答题助手（个人学习辅助工具）',
-    version: '1.0.13',
+    version: '1.0.15',
     ...(fixedKey ? { key: fixedKey } : {}),
     minimum_chrome_version: '116',
     // 只保留真正用到的权限（storage）

@@ -4,18 +4,19 @@ import { TYPE_PRIORITY } from '../../shared/constants';
 import { getSettings } from '../../shared/storage';
 import type { RunState } from '../../shared/types/messages';
 import type { ParsedQuestion, SolveResult } from '../../shared/types/question';
-import { isExamPage, parseAllExamQuestions, countDeclaredQuestions } from './parse/exam';
+import { isExamStylePage, parseAllExamQuestions, countDeclaredQuestions } from './parse/exam';
 import { parseAllQuestions } from './parse';
 import { fillParsed } from './single';
 import { materializeWholePage } from './materialize';
 
 /**
- * 「整卷铺开」模式：题目全部渲染在同一个页面上（学习通「整卷预览/浏览」），
- * 没有答题卡、不能逐题跳转 —— 那就**就地作答**，一道题都不需要跳转。
+ * 「整卷铺开」模式：题目全部渲染在同一个页面上，没有答题卡、不能逐题跳转
+ * —— 那就**就地作答**，一道题都不用跳转。
  *
- * 这条路径同时兼容：
- *  - 新版考试的整卷预览页（多个 .questionLi[data] 并存）
- *  - 旧版作业页的整卷渲染（多个 .TiMu 并存）
+ * 这条路径覆盖两种页面，**按 DOM 结构分流**（而不是按 URL）：
+ *  - 结构化答题页（`.questionLi[data]` + `.mark_name` + `.answerBg`/`addChoice`）：
+ *    整卷预览页、以及**作业页 `mooc2/work/dowork`**（实测与考试页同一套约定）
+ *  - 真正的旧版页面（`.TiMu` + 原生 input）
  *
  * 状态广播复用 ENGINE_STATE，经 SW 转发给浮球，界面与逐题模式完全一致。
  */
@@ -49,7 +50,9 @@ export async function runWholePage(): Promise<void> {
 
 async function runWholePageInner(): Promise<void> {
 
-  const exam = isExamPage();
+  // ★ 按 DOM 结构分流，不按 URL —— 作业页 dowork 与考试页共用同一套结构，
+  //   早期只看 URL 导致作业页走了旧解析（整卷被当成 1 道题、全失败）
+  const structured = isExamStylePage();
 
   // ★ 先滚动催熟：整卷页的题目多为懒渲染，没滚到的部分 DOM 里不存在，
   //   直接解析就会"漏题"（实测同一份卷子不同时候能解析到 8 / 10 题不等）
@@ -66,8 +69,8 @@ async function runWholePageInner(): Promise<void> {
   });
   await materializeWholePage();
 
-  const list: ParsedQuestion[] = exam ? parseAllExamQuestions() : parseAllQuestions();
-  const declared = exam ? countDeclaredQuestions() : 0;
+  const list: ParsedQuestion[] = structured ? parseAllExamQuestions() : parseAllQuestions();
+  const declared = structured ? countDeclaredQuestions() : 0;
 
   if (!list.length) {
     await broadcast({

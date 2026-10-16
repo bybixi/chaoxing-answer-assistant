@@ -366,8 +366,21 @@ export default defineBackground(() => {
   ): Promise<{ ok: true }> => {
     if (tabId == null) return { ok: true };
     const frameId = workFrames.get(tabId);
-    if (frameId == null) return { ok: true };
-    await sendToFrame(tabId, frameId, type, undefined);
+    if (frameId == null) {
+      // 静默返回过一段时间 —— 那会让"点了没反应"无法排查，至少留一条日志
+      console.warn(`[zhida] ${type}: 该标签页还没有任何 work frame 报到，指令未下发`);
+      return { ok: true };
+    }
+    try {
+      await sendToFrame(tabId, frameId, type, undefined);
+    } catch (err) {
+      // frameId 可能已过期（SPA 内 iframe 重载/切页）→ sendMessage 会抛
+      // "Receiving end does not exist"，早期会一路吞掉
+      console.warn(
+        `[zhida] ${type} 下发到 frame ${frameId} 失败:`,
+        (err as Error).message,
+      );
+    }
     return { ok: true };
   };
 

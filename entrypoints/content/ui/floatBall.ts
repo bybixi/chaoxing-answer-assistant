@@ -3,7 +3,7 @@ import { onMessage, sendToBackground } from '../../../shared/messaging';
 import type { RunState } from '../../../shared/types/messages';
 import { solveCurrentQuestion } from '../single';
 import { runWholePage, stopWholePage } from '../wholePage';
-import { detectPageShape, isExamPage } from '../parse/exam';
+import { detectPageShape, isExamPage, isExamStylePage } from '../parse/exam';
 
 /**
  * 浮球 UI（顶层 frame）。
@@ -335,7 +335,11 @@ export function startShell(): void {
     const shape = detectPageShape();
     const box = shadow.querySelector('#zd-single') as HTMLElement;
     // 把判定依据显示出来：万一又跑偏，截图就能直接定位
-    box.textContent = `检测：${shape.diag} → ${shape.mode === 'whole' ? '就地作答模式' : '逐题模式'}`;
+    // 结构化页面（考试页 / 作业页 dowork / 整卷预览）走同一套解析与回填
+    const style = isExamStylePage() ? '结构化' : '旧版';
+    box.textContent =
+      `检测：${shape.diag} → ` +
+      (shape.mode === 'whole' ? `就地作答（${style}）` : '逐题模式');
     box.style.color = '#6b7280';
     box.classList.add('on');
 
@@ -348,7 +352,12 @@ export function startShell(): void {
       box.style.color = '#b45309';
       return;
     }
-    void sendToBackground('RUN_CMD', 'start');
+    // ★ 必须 catch：否则后台路由失败时会静默无反应（最难排查的情况）
+    void sendToBackground('RUN_CMD', 'start').catch((err: unknown) => {
+      box.textContent += ` —— 启动失败：${(err as Error).message}`;
+      box.style.color = '#b91c1c';
+      box.classList.add('on');
+    });
   });
 
   shadow.querySelector('#zd-stop')!.addEventListener('click', () => {

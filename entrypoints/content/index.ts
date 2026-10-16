@@ -4,7 +4,7 @@ import { startEngine } from './engine';
 import { startExamEngine } from './examEngine';
 import { startShell } from './ui/floatBall';
 import { createRouter } from '../../shared/messaging';
-import { isExamPage } from './parse/exam';
+import { isExamPage, isExamStylePage } from './parse/exam';
 
 /**
  * 内容脚本入口：学习通是「顶层壳 + 多个跨域 iframe」结构，
@@ -29,11 +29,15 @@ export default defineContentScript({
 
     const isTop = window.top === window;
 
-    if (isExamPage()) {
-      // 考试页的引擎与浮球都只该活在**顶层文档**：
-      // 若 exam-ans 页面被嵌进 iframe，再注入一颗浮球就是重复 UI
+    // ★ 结构化答题页 = 考试页 + 作业页（mooc2/work/dowork）+ 整卷预览页
+    //   三者共用同一套 DOM 约定，必须走同一套解析/回填。
+    //   早期只按 URL 判定（isExamPage），作业页因此落进旧版引擎 ——
+    //   而旧引擎的 .TiMu 选择器会把整卷当成 1 道题（2026-10-16 实测确认）。
+    if (isExamPage() || isExamStylePage()) {
       if (isTop) {
-        startExamEngine();
+        // 逐题考试页需要 SW 编排"逐题跳转"，所以仍启动 examEngine；
+        // 作业页/预览页是整卷铺开，由浮球驱动的「就地作答」处理，不需要它。
+        if (isExamPage()) startExamEngine();
         startShell();
       }
       return;

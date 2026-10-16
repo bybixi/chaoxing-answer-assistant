@@ -82,5 +82,12 @@ export function buildReviewPrompt(q: Question, candidate: Answer): string {
 然后只输出一个 JSON 对象，结构如下：
 {"verdict":"correct" 或 "wrong","type":"single|multiple|judge|blank|short","selections":[...],"blanks":[...],"essay":"...","confidence":0.0~1.0}
 
-其中 verdict 表示候选答案是否正确；selections/blanks/essay 填**你复核后的最终答案**（若认为候选正确就照填）；confidence 是你对最终答案的真实把握。`;
+其中 verdict 表示候选答案是否正确；selections/blanks/essay 填**你复核后的最终答案**（若认为候选正确就照填）；confidence 是你对最终答案的真实把握。
+
+⚠️ 字段必须严格符合本题题型（${q.type}），多写字段或不符形状会被判为无效：
+- 单选题 / 判断题：selections 必须**恰好一个**元素（如 ["C"]），绝不要给两个以上
+- 多选题：selections 给全部正确选项（每个元素是一个选项字母）
+- 填空题：blanks 的数量必须与题目空位数完全一致
+- 简答题：只填 essay
+与本题型无关的字段一律留空或省略。`;
 }

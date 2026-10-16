@@ -1,5 +1,6 @@
 import { buildRetryPrompt, buildReviewPrompt, buildSystemPrompt, buildUserPrompt } from './prompt';
 import { isSameAnswer, normalizeAnswer, validateAnswer } from './validate';
+import { decideReviewOutcome } from './reviewDecision';
 import { AI_TIMEOUT_MS, requestWithRetry } from './request';
 import { fetchImagesAsDataUrls } from '../imageFetch';
 import { getSettings } from '../storage';
@@ -237,25 +238,29 @@ async function reviewLowConfidenceAnswer(
   }
 
   const reviewed = normalizeAnswer(raw, question);
-  const v = validateAnswer(question, reviewed);
-  if (!v.ok) {
-    return { answer: null, reason: `置信度过低(${originalConf.toFixed(2)})，复核答案不合格(${v.reason})，留空` };
-  }
-
+  const reviewValid = validateAnswer(question, reviewed).ok;
   const verdict = String(raw.verdict ?? '').toLowerCase();
   const rconf = reviewed.confidence ?? 0;
   const same = isSameAnswer(candidate, reviewed, question.type);
-  const confText = `原${originalConf.toFixed(2)}→复核${rconf.toFixed(2)}`;
 
-  if (rconf < s.minConfidence) {
-    return { answer: null, reason: `复核后置信度仍不足（${confText}），宁空不错` };
+  // ★ 判决逻辑抽成纯函数（含"复核输出格式非法但明确认可原答案"的挽救分支），
+  //   见 shared/ai/reviewDecision.ts 与 tests/review-decision.spec.ts
+  const decision = decideReviewOutcome({
+    candidateValid: validateAnswer(question, candidate).ok,
+    reviewValid,
+    rconf,
+    originalConf,
+    minConfidence: s.minConfidence,
+    verdict,
+    same,
+  });
+
+  switch (decision.action) {
+    case 'adopt-candidate':
+      return { answer: candidate, note: decision.note };
+    case 'adopt-review':
+      return { answer: reviewed, note: decision.note };
+    default:
+      return { answer: null, reason: decision.reason };
   }
-  if (verdict === 'correct' && same) {
-    return { answer: candidate, note: `低置信度经复核确认（${confText}）` };
-  }
-  if (verdict === 'wrong' && !same) {
-    return { answer: reviewed, note: `原答案经复核更正（${confText}）` };
-  }
-  // 声明与内容不一致（如说 correct 却给了不同答案）：不冒险
-  return { answer: null, reason: `复核结论自相矛盾（${confText}），宁空不错` };
 }

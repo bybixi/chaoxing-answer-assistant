@@ -52,6 +52,26 @@ export function parseCurrentExamQuestionFromDom(): {
 }
 
 /**
+ * 是否为新版「结构化」答题页 —— 用于**选择解析器与回填器**。
+ *
+ * ★ 为什么不能只看 URL（2026-10-16 真机探针确认）：
+ *   作业页 `mooc2/work/dowork` 用的是**与考试页完全相同**的 DOM 约定 ——
+ *   `.questionLi[data]` 容器、`.mark_name` 题干、`.answerBg` + `addChoice` 选项、
+ *   `#answer<qid>` 校验域。早期实现按 URL 判定（只认 `exam-ans`），
+ *   于是作业页被判成"旧版" → 走 `.TiMu` 选择器 → 而 `.TiMu` 在那页上
+ *   是**整个答题区的外层包裹**（只有一个）→ 整卷被当成 1 道题；
+ *   又因该容器内原生 input 为 0 → 选项全丢 → 题型 unknown →
+ *   「特殊题型暂不支持」→ 表现为"有反应但全部失败"。
+ *
+ * ⚠️ 这里**只判断 DOM 约定**，不判断"逐题还是整卷" —— 后者由
+ *   `detectPageShape()`（看答题卡 `li[data-asq]`）负责。
+ *   逐题考试页同样属于本结构，不能因为"有答题卡"就判否。
+ */
+export function isExamStylePage(): boolean {
+  return document.querySelectorAll('.questionLi[data] .mark_name').length > 0;
+}
+
+/**
  * 枚举页面上所有可能的题目容器。
  *
  * ★ 必须被 `parseAllExamQuestions` 与 `detectPageShape` **共用同一口径**：
@@ -67,13 +87,18 @@ function collectQuestionContainers(): HTMLElement[] {
     )
     .forEach((el) => set.add(el));
 
-  return [...set].filter(
+  const valid = [...set].filter(
     (el) =>
       el.querySelector('.mark_name') !== null ||
       el.querySelector(SELECTORS.examOptionItem) !== null ||
       el.querySelector('[onclick*="addChoice"]') !== null ||
       el.querySelector('input[type=radio], input[type=checkbox], input[type=text]') !== null,
   );
+
+  // ★ 剔除「包裹型容器」：内部还含其它候选容器的元素只是外层包装，不是单题。
+  //   作业页实测：`div.fanyaMarking.TiMu` 包着 8 个 `.questionLi`，
+  //   若不剔除，题数会从 8 虚增到 9。
+  return valid.filter((el) => !valid.some((other) => other !== el && el.contains(other)));
 }
 
 /** 解析页面上**所有**题目容器（整卷浏览/预览页：题目一次性全铺在同一页） */

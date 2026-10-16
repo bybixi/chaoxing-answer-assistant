@@ -24,6 +24,7 @@ tools/*
 !tools/audit-fixes.mjs
 !tools/verify-bundle.mjs
 !tools/sync-license.mjs
+!tools/probe-homework.mjs
 
 # 构建时由 tools/sync-license.mjs 从根目录 LICENSE 生成（单一事实来源在根目录）
 public/LICENSE.txt

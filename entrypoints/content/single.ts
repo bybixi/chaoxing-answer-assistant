@@ -1,6 +1,6 @@
 import { sendToBackground } from '../../shared/messaging';
 import type { ParsedQuestion, SolveResult } from '../../shared/types/question';
-import { isExamPage, parseAllExamQuestions, parseCurrentExamQuestionFromDom } from './parse/exam';
+import { isExamStylePage, parseAllExamQuestions, parseCurrentExamQuestionFromDom } from './parse/exam';
 import { parseAllQuestions } from './parse';
 import { fillExamChoice } from './fill/exam';
 import { fillBlanks } from './fill/input';
@@ -18,7 +18,8 @@ import { fillAnswer } from './fill';
  *  - 旧版作业页（整卷） → 取视口中心最近的那道题
  */
 export async function solveCurrentQuestion(): Promise<{ ok: boolean; message: string }> {
-  const exam = isExamPage();
+  // ★ 结构判定：作业页（dowork）与考试页共用同一套结构，都走新版解析
+  const exam = isExamStylePage();
 
   let parsed: ParsedQuestion | null = null;
   if (exam) {
@@ -84,7 +85,8 @@ export async function fillParsed(
   parsed: ParsedQuestion,
   answer: NonNullable<SolveResult['answer']>,
 ) {
-  if (!isExamPage()) return await fillAnswer(parsed, answer); // 旧版作业页：原生控件
+  // 旧版页面才有原生 radio/checkbox；结构化页面（含作业页 dowork）走新版回填
+  if (!isExamStylePage()) return await fillAnswer(parsed, answer);
   switch (parsed.data.type) {
     case 'single':
     case 'judge':

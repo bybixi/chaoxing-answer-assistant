@@ -12,6 +12,7 @@ import type { RunState } from '../../shared/types/messages';
 import { watchForQuestions } from './watcher';
 import { parseAllQuestions } from './parse';
 import { fillAnswer } from './fill';
+import { isExamStylePage } from './parse/exam';
 
 /**
  * 引擎（work frame）：侦测 → 抓题 → 调度求解 → 回填 → 广播状态。
@@ -21,6 +22,12 @@ import { fillAnswer } from './fill';
  * 页面刷新会中断本轮，靠超星自身的实时保存兜底。
  */
 export function startEngine(): void {
+  // ★ 结构化答题页（作业页 mooc2/work/dowork、整卷预览页）必须交给新版解析与回填。
+  //   旧引擎的 `.TiMu` 选择器在那些页面上只会命中"整个答题区的外层包裹"，
+  //   把整卷当成 1 道题、且选项全丢 → 全部失败（2026-10-16 真机确认）。
+  //   启动即拦下，避免 autoRun 自动跑一遍无意义的失败流程。
+  if (isExamStylePage()) return;
+
   const state: RunState = {
     active: false,
     phase: 'idle',
@@ -46,7 +53,15 @@ export function startEngine(): void {
     if (!s.enabled) return;
 
     const questions = lastQuestions.length ? lastQuestions : collectNow();
-    if (!questions.length) return;
+    if (!questions.length) {
+      // ★ 绝不静默返回：用户点了「开始」却毫无变化，是最难排查的一种失败。
+      state.phase = 'error';
+      state.active = false;
+      state.total = 0;
+      state.message = '本页面没解析到题目（旧版选择器可能不匹配，或本 frame 不是承题 frame）';
+      broadcast();
+      return;
+    }
 
     state.phase = 'solve';
     state.active = true;

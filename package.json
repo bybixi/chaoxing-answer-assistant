@@ -1,6 +1,6 @@
 {
   "name": "zhi-da",
-  "version": "1.0.13",
+  "version": "1.0.15",
   "description": "学习通作业自动答题助手（自用）",
   "type": "module",
   "private": true,
